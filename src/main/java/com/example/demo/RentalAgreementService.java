@@ -32,9 +32,10 @@ public class RentalAgreementService {
         //calculate due date
         LocalDate dueDate = checkoutDate.plusDays(rentalDays);
 
+        //calculate charge days
         int chargeDays = calculateChargeDays(tool, checkoutDate, dueDate);
 
-        //assuming chargeDays should not be 0
+        //can chargeDays be less than 1? (i.e if qualifying tool is rented on holiday or weekend only)
 //        if(chargeDays < 1) {
 //            throw new IllegalArgumentException("Unable to process request.");
 //        }
