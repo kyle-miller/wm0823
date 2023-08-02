@@ -33,7 +33,7 @@ public class RentalAgreementServiceTest {
     //Test 1
     @Test
     public void checkout_WithInvalidDiscount_ThrowsException() {
-        //given
+        //given input
         LocalDate checkoutDate = LocalDate.of(2015, 9, 03);
         int rentalDays = 5;
         int invalidDiscount = 101;
@@ -51,88 +51,142 @@ public class RentalAgreementServiceTest {
 
     //Test 2
     @Test
-    public void checkout_LADWIndependenceDay_NoHolidayCharge() {
-        //given
+    public void checkout_LADW_IndependenceDay_NoHolidayCharge() {
+        //given input
         LocalDate checkoutDate = LocalDate.of(2020, 7, 2);
         int rentalDays = 3;
-        int discount = 10;
+        int discountPercent = 10;
+
+        //expected output
+        int expectedRentalDays = rentalDays;
+        int expectedChargeDays = 2;
+        LocalDate expectedDueDate = LocalDate.of(2020, 7, 5);
+        BigDecimal expectedPreDiscountCharge = BigDecimal.valueOf(expectedChargeDays).multiply(BigDecimal.valueOf(LADW.getDailyCharge()));
+        BigDecimal expectedDiscountAmount = expectedPreDiscountCharge.multiply(BigDecimal.valueOf(discountPercent)).divide(BigDecimal.valueOf(100), RoundingMode.HALF_UP);
+        BigDecimal expectedFinalCharge = expectedPreDiscountCharge.subtract(expectedDiscountAmount).setScale(2, RoundingMode.HALF_UP);
 
         //when
-        RentalAgreement actualRentalAgreement = rentalAgreementService.checkout(LADW, rentalDays, discount, checkoutDate);
+        RentalAgreement actualRentalAgreement = rentalAgreementService.checkout(LADW, rentalDays, discountPercent, checkoutDate);
 
         //then
-        assertEquals(2, actualRentalAgreement.getChargeDays());
-        assertNotEquals(rentalDays, actualRentalAgreement.getChargeDays());
-        assertEquals(3, actualRentalAgreement.getRentalDays());
-        assertEquals(BigDecimal.valueOf(0.40).setScale(2, RoundingMode.HALF_UP), actualRentalAgreement.getDiscountAmount());
+        assertEquals(expectedRentalDays, actualRentalAgreement.getRentalDays());
+        assertEquals(expectedChargeDays, actualRentalAgreement.getChargeDays());
+        assertEquals(expectedDueDate, actualRentalAgreement.getDueDate());
+        assertEquals(expectedPreDiscountCharge, actualRentalAgreement.getPreDiscountCharge());
+        assertEquals(expectedDiscountAmount, actualRentalAgreement.getDiscountAmount());
+        assertEquals(expectedFinalCharge, actualRentalAgreement.getFinalCharge());
     }
 
     //Test 3
     @Test
-    public void checkout_CHNSIndependenceDayWeekend_HolidayChargeButNoWeekendCharge() {
-        //given
+    public void checkout_CHNS_IndependenceDayWeekend_HolidayChargeButNoWeekendCharge() {
+        //given input
         LocalDate checkoutDate = LocalDate.of(2015, 7, 2);
         int rentalDays = 5;
-        int discount = 25;
+        int discountPercent = 25;
+
+        //expected output
+        int expectedRentalDays = rentalDays;
+        int expectedChargeDays = 3;
+        LocalDate expectedDueDate = LocalDate.of(2015, 7, 7);
+        BigDecimal expectedPreDiscountCharge = BigDecimal.valueOf(expectedChargeDays).multiply(BigDecimal.valueOf(CHNS.getDailyCharge()));
+        BigDecimal expectedDiscountAmount = expectedPreDiscountCharge.multiply(BigDecimal.valueOf(discountPercent)).divide(BigDecimal.valueOf(100), RoundingMode.HALF_UP);
+        BigDecimal expectedFinalCharge = expectedPreDiscountCharge.subtract(expectedDiscountAmount).setScale(2, RoundingMode.HALF_UP);
 
         //when
-        RentalAgreement actualRentalAgreement = rentalAgreementService.checkout(CHNS, rentalDays, discount, checkoutDate);
+        RentalAgreement actualRentalAgreement = rentalAgreementService.checkout(CHNS, rentalDays, discountPercent, checkoutDate);
 
         //then
-        assertEquals(3, actualRentalAgreement.getChargeDays());
-        assertEquals(rentalDays, actualRentalAgreement.getRentalDays());
-        assertEquals(BigDecimal.valueOf(1.12).setScale(2, RoundingMode.HALF_UP), actualRentalAgreement.getDiscountAmount());
+        assertEquals(expectedRentalDays, actualRentalAgreement.getRentalDays());
+        assertEquals(expectedChargeDays, actualRentalAgreement.getChargeDays());
+        assertEquals(expectedDueDate, actualRentalAgreement.getDueDate());
+        assertEquals(expectedPreDiscountCharge, actualRentalAgreement.getPreDiscountCharge());
+        assertEquals(expectedDiscountAmount, actualRentalAgreement.getDiscountAmount());
+        assertEquals(expectedFinalCharge, actualRentalAgreement.getFinalCharge());
     }
 
     //Test 4
     @Test
-    public void checkout_JAKDLaborDayWeekend_NoWeekendOrHolidayCharge() {
-        //given
+    public void checkout_JAKD_LaborDayWeekend_NoWeekendOrHolidayCharge() {
+        //given input
         LocalDate checkoutDate = LocalDate.of(2015, 9, 3);
         int rentalDays = 6;
-        int discount = 0;
+        int discountPercent = 0;
+
+        //expected output
+        int expectedRentalDays = rentalDays;
+        int expectedChargeDays = 3;
+        LocalDate expectedDueDate = LocalDate.of(2015, 9, 9);
+        BigDecimal expectedPreDiscountCharge = BigDecimal.valueOf(expectedChargeDays).multiply(BigDecimal.valueOf(JAKD.getDailyCharge()));
+        BigDecimal expectedDiscountAmount = expectedPreDiscountCharge.multiply(BigDecimal.valueOf(discountPercent)).divide(BigDecimal.valueOf(100), RoundingMode.HALF_UP);
+        BigDecimal expectedFinalCharge = expectedPreDiscountCharge.subtract(expectedDiscountAmount).setScale(2, RoundingMode.HALF_UP);
 
         //when
-        RentalAgreement actualRentalAgreement = rentalAgreementService.checkout(JAKD, rentalDays, discount, checkoutDate);
+        RentalAgreement actualRentalAgreement = rentalAgreementService.checkout(JAKD, rentalDays, discountPercent, checkoutDate);
 
         //then
-        assertEquals(3, actualRentalAgreement.getChargeDays());
-        assertEquals(rentalDays, actualRentalAgreement.getRentalDays()); //maybe don't need
-        assertEquals(BigDecimal.valueOf(0.00).setScale(2, RoundingMode.HALF_UP), actualRentalAgreement.getDiscountAmount());
+        assertEquals(expectedRentalDays, actualRentalAgreement.getRentalDays());
+        assertEquals(expectedChargeDays, actualRentalAgreement.getChargeDays());
+        assertEquals(expectedDueDate, actualRentalAgreement.getDueDate());
+        assertEquals(expectedPreDiscountCharge, actualRentalAgreement.getPreDiscountCharge());
+        assertEquals(expectedDiscountAmount, actualRentalAgreement.getDiscountAmount());
+        assertEquals(expectedFinalCharge, actualRentalAgreement.getFinalCharge());
     }
 
     //Test 5
     @Test
-    public void checkout_JAKRIndependenceDayWeekend_NoWeekendOrHolidayCharge() {
-        //given
+    public void checkout_JAKR_IndependenceDayWeekend_NoWeekendOrHolidayCharge() {
+        //given input
         LocalDate checkoutDate = LocalDate.of(2015, 7, 2);
         int rentalDays = 9;
-        int discount = 0;
+        int discountPercent = 0;
+
+        //expected output
+        int expectedRentalDays = rentalDays;
+        int expectedChargeDays = 6;
+        LocalDate expectedDueDate = LocalDate.of(2015, 7, 11);
+        BigDecimal expectedPreDiscountCharge = BigDecimal.valueOf(expectedChargeDays).multiply(BigDecimal.valueOf(JAKR.getDailyCharge()));
+        BigDecimal expectedDiscountAmount = expectedPreDiscountCharge.multiply(BigDecimal.valueOf(discountPercent)).divide(BigDecimal.valueOf(100), RoundingMode.HALF_UP);
+        BigDecimal expectedFinalCharge = expectedPreDiscountCharge.subtract(expectedDiscountAmount).setScale(2, RoundingMode.HALF_UP);
 
         //when
-        RentalAgreement actualRentalAgreement = rentalAgreementService.checkout(JAKR, rentalDays, discount, checkoutDate);
+        RentalAgreement actualRentalAgreement = rentalAgreementService.checkout(JAKR, rentalDays, discountPercent, checkoutDate);
 
         //then
-        assertEquals(6, actualRentalAgreement.getChargeDays());
-        assertEquals(rentalDays, actualRentalAgreement.getRentalDays()); //maybe don't need
-        assertEquals(BigDecimal.valueOf(0.00).setScale(2, RoundingMode.HALF_UP), actualRentalAgreement.getDiscountAmount());
+        assertEquals(expectedRentalDays, actualRentalAgreement.getRentalDays());
+        assertEquals(expectedChargeDays, actualRentalAgreement.getChargeDays());
+        assertEquals(expectedDueDate, actualRentalAgreement.getDueDate());
+        assertEquals(expectedPreDiscountCharge, actualRentalAgreement.getPreDiscountCharge());
+        assertEquals(expectedDiscountAmount, actualRentalAgreement.getDiscountAmount());
+        assertEquals(expectedFinalCharge, actualRentalAgreement.getFinalCharge());
     }
 
     //Test 6
     @Test
-    public void checkout_JAKRIndependenceDayWeekendWithDiscount_NoWeekendOrHolidayCharge() {
+    public void checkout_JAKR_IndependenceDayWeekendWithDiscount_NoWeekendOrHolidayCharge() {
         //given
         LocalDate checkoutDate = LocalDate.of(2020, 7, 2);
         int rentalDays = 4;
-        int discount = 50;
+        int discountPercent = 50;
+
+        //expected output
+        int expectedRentalDays = rentalDays;
+        int expectedChargeDays = 1;
+        LocalDate expectedDueDate = LocalDate.of(2020, 7, 6);
+        BigDecimal expectedPreDiscountCharge = BigDecimal.valueOf(expectedChargeDays).multiply(BigDecimal.valueOf(JAKR.getDailyCharge()));
+        BigDecimal expectedDiscountAmount = expectedPreDiscountCharge.multiply(BigDecimal.valueOf(discountPercent)).divide(BigDecimal.valueOf(100), RoundingMode.HALF_UP);
+        BigDecimal expectedFinalCharge = expectedPreDiscountCharge.subtract(expectedDiscountAmount).setScale(2, RoundingMode.HALF_UP);
 
         //when
-        RentalAgreement actualRentalAgreement = rentalAgreementService.checkout(JAKR, rentalDays, discount, checkoutDate);
+        RentalAgreement actualRentalAgreement = rentalAgreementService.checkout(JAKR, rentalDays, discountPercent, checkoutDate);
 
         //then
-        assertEquals(1, actualRentalAgreement.getChargeDays());
-        assertEquals(rentalDays, actualRentalAgreement.getRentalDays()); //maybe don't need
-        assertEquals(BigDecimal.valueOf(1.50).setScale(2, RoundingMode.HALF_UP), actualRentalAgreement.getDiscountAmount());
+        assertEquals(expectedRentalDays, actualRentalAgreement.getRentalDays());
+        assertEquals(expectedChargeDays, actualRentalAgreement.getChargeDays());
+        assertEquals(expectedDueDate, actualRentalAgreement.getDueDate());
+        assertEquals(expectedPreDiscountCharge, actualRentalAgreement.getPreDiscountCharge());
+        assertEquals(expectedDiscountAmount, actualRentalAgreement.getDiscountAmount());
+        assertEquals(expectedFinalCharge, actualRentalAgreement.getFinalCharge());
     }
 
     //Extra Test 1
@@ -156,123 +210,181 @@ public class RentalAgreementServiceTest {
 
     //Extra Test 2
     @Test
-    public void checkout_CHNSFreeWeekend_ZeroCharge() {
+    public void checkout_CHNS_FreeWeekend_ZeroCharge() {
         //given
         LocalDate checkoutDate = LocalDate.of(2023, 8, 5);
         int rentalDays = 2;
-        int discount = 10;
+        int discountPercent = 10;
+
+        //expected output
+        int expectedRentalDays = rentalDays;
+        int expectedZeroChargeDays = 0;
+        LocalDate expectedDueDate = LocalDate.of(2023, 8, 7);
+        BigDecimal expectedPreDiscountCharge = BigDecimal.valueOf(expectedZeroChargeDays).multiply(BigDecimal.valueOf(CHNS.getDailyCharge()));
+        BigDecimal expectedDiscountAmount = expectedPreDiscountCharge.multiply(BigDecimal.valueOf(discountPercent)).divide(BigDecimal.valueOf(100), RoundingMode.HALF_UP);
+        BigDecimal expectedFinalCharge = expectedPreDiscountCharge.subtract(expectedDiscountAmount).setScale(2, RoundingMode.HALF_UP);
 
         //when
-        RentalAgreement actualRentalAgreement = rentalAgreementService.checkout(CHNS, rentalDays, discount, checkoutDate);
+        RentalAgreement actualRentalAgreement = rentalAgreementService.checkout(CHNS, rentalDays, discountPercent, checkoutDate);
 
         //then
-        assertEquals(0, actualRentalAgreement.getChargeDays());
-        assertEquals(rentalDays, actualRentalAgreement.getRentalDays());
-        assertEquals(BigDecimal.valueOf(0.00).setScale(2, RoundingMode.HALF_UP), actualRentalAgreement.getDiscountAmount());
+        assertEquals(expectedRentalDays, actualRentalAgreement.getRentalDays());
+        assertEquals(expectedZeroChargeDays, actualRentalAgreement.getChargeDays());
+        assertEquals(expectedDueDate, actualRentalAgreement.getDueDate());
+        assertEquals(expectedPreDiscountCharge, actualRentalAgreement.getPreDiscountCharge());
+        assertEquals(expectedDiscountAmount, actualRentalAgreement.getDiscountAmount());
+        assertEquals(expectedFinalCharge, actualRentalAgreement.getFinalCharge());
     }
 
     //Extra Test 3
     @Test
-    public void checkout_JAKDFreeIndependenceDay_ZeroCharge() {
+    public void checkout_JAKD_FreeIndependenceDay_ZeroCharge() {
         //given
         LocalDate checkoutDate = LocalDate.of(2023, 7, 4);
         int rentalDays = 1;
-        int discount = 10;
+        int discountPercent = 10;
+
+        //expected output
+        int expectedRentalDays = rentalDays;
+        int expectedZeroChargeDays = 0;
+        LocalDate expectedDueDate = LocalDate.of(2023, 7, 5);
+        BigDecimal expectedPreDiscountCharge = BigDecimal.valueOf(expectedZeroChargeDays).multiply(BigDecimal.valueOf(JAKD.getDailyCharge()));
+        BigDecimal expectedDiscountAmount = expectedPreDiscountCharge.multiply(BigDecimal.valueOf(discountPercent)).divide(BigDecimal.valueOf(100), RoundingMode.HALF_UP);
+        BigDecimal expectedFinalCharge = expectedPreDiscountCharge.subtract(expectedDiscountAmount).setScale(2, RoundingMode.HALF_UP);
 
         //when
-        RentalAgreement actualRentalAgreement = rentalAgreementService.checkout(JAKD, rentalDays, discount, checkoutDate);
+        RentalAgreement actualRentalAgreement = rentalAgreementService.checkout(JAKD, rentalDays, discountPercent, checkoutDate);
 
         //then
-        assertEquals(0, actualRentalAgreement.getChargeDays());
-        assertEquals(rentalDays, actualRentalAgreement.getRentalDays()); //maybe don't need
-        assertEquals(BigDecimal.valueOf(0.00).setScale(2, RoundingMode.HALF_UP), actualRentalAgreement.getDiscountAmount());
+        assertEquals(expectedRentalDays, actualRentalAgreement.getRentalDays());
+        assertEquals(expectedZeroChargeDays, actualRentalAgreement.getChargeDays());
+        assertEquals(expectedDueDate, actualRentalAgreement.getDueDate());
+        assertEquals(expectedPreDiscountCharge, actualRentalAgreement.getPreDiscountCharge());
+        assertEquals(expectedDiscountAmount, actualRentalAgreement.getDiscountAmount());
+        assertEquals(expectedFinalCharge, actualRentalAgreement.getFinalCharge());
     }
 
     //Extra Test 4
     @Test
-    public void checkout_JAKDFreeLaborDayWeekend_ZeroCharge() {
+    public void checkout_JAKD_FreeLaborDayWeekend_ZeroCharge() {
         //given
         LocalDate checkoutDate = LocalDate.of(2023, 9, 2);
         int rentalDays = 3;
-        int discount = 10;
+        int discountPercent = 10;
+
+        //expected output
+        int expectedRentalDays = rentalDays;
+        int expectedZeroChargeDays = 0;
+        LocalDate expectedDueDate = LocalDate.of(2023, 9, 5);
+        BigDecimal expectedPreDiscountCharge = BigDecimal.valueOf(expectedZeroChargeDays).multiply(BigDecimal.valueOf(JAKD.getDailyCharge()));
+        BigDecimal expectedDiscountAmount = expectedPreDiscountCharge.multiply(BigDecimal.valueOf(discountPercent)).divide(BigDecimal.valueOf(100), RoundingMode.HALF_UP);
+        BigDecimal expectedFinalCharge = expectedPreDiscountCharge.subtract(expectedDiscountAmount).setScale(2, RoundingMode.HALF_UP);
 
         //when
-        RentalAgreement actualRentalAgreement = rentalAgreementService.checkout(JAKD, rentalDays, discount, checkoutDate);
+        RentalAgreement actualRentalAgreement = rentalAgreementService.checkout(JAKD, rentalDays, discountPercent, checkoutDate);
 
         //then
-        assertEquals(0, actualRentalAgreement.getChargeDays());
-        assertEquals(rentalDays, actualRentalAgreement.getRentalDays()); //maybe don't need
-        assertEquals(BigDecimal.valueOf(0.00).setScale(2, RoundingMode.HALF_UP), actualRentalAgreement.getDiscountAmount());
+        assertEquals(expectedRentalDays, actualRentalAgreement.getRentalDays());
+        assertEquals(expectedZeroChargeDays, actualRentalAgreement.getChargeDays());
+        assertEquals(expectedDueDate, actualRentalAgreement.getDueDate());
+        assertEquals(expectedPreDiscountCharge, actualRentalAgreement.getPreDiscountCharge());
+        assertEquals(expectedDiscountAmount, actualRentalAgreement.getDiscountAmount());
+        assertEquals(expectedFinalCharge, actualRentalAgreement.getFinalCharge());
     }
 
     //Extra Test 5
     @Test
-    public void checkout_LADWTwoYearRental_LargeFinalCharge() {
+    public void checkout_LADW_TwoYearRental_LargeFinalCharge() {
         //given
         LocalDate checkoutDate = LocalDate.of(2020, 7, 2);
         int rentalDays = 730;
-        int discount = 25;
+        int discountPercent = 25;
+
+        //expected output
+        int expectedRentalDays = rentalDays;
+        int expectedChargeDays = 726;
+        LocalDate expectedDueDate = LocalDate.of(2022, 7, 2);
+        BigDecimal expectedPreDiscountCharge = BigDecimal.valueOf(expectedChargeDays).multiply(BigDecimal.valueOf(LADW.getDailyCharge()));
+        BigDecimal expectedDiscountAmount = expectedPreDiscountCharge.multiply(BigDecimal.valueOf(discountPercent)).divide(BigDecimal.valueOf(100), RoundingMode.HALF_UP);
+        BigDecimal expectedFinalCharge = expectedPreDiscountCharge.subtract(expectedDiscountAmount).setScale(2, RoundingMode.HALF_UP);
 
         //when
-        RentalAgreement actualRentalAgreement = rentalAgreementService.checkout(LADW, rentalDays, discount, checkoutDate);
+        RentalAgreement actualRentalAgreement = rentalAgreementService.checkout(LADW, rentalDays, discountPercent, checkoutDate);
 
         //then
-        assertEquals(726, actualRentalAgreement.getChargeDays());
+        assertEquals(expectedRentalDays, actualRentalAgreement.getRentalDays());
+        assertEquals(expectedChargeDays, actualRentalAgreement.getChargeDays());
+        assertEquals(expectedDueDate, actualRentalAgreement.getDueDate());
+        assertEquals(expectedPreDiscountCharge, actualRentalAgreement.getPreDiscountCharge());
+        assertEquals(expectedDiscountAmount, actualRentalAgreement.getDiscountAmount());
+        assertEquals(expectedFinalCharge, actualRentalAgreement.getFinalCharge());
     }
 
     //Extra Test 6
     @Test
-    public void calculateChargeDays_CHNSIndependenceDay_HolidayCharge() {
+    public void calculateChargeDays_CHNS_IndependenceDay_HolidayCharge() {
         //given
         LocalDate checkoutDate = LocalDate.of(2020, 7, 2);
         LocalDate dueDate = LocalDate.of(2020, 7, 4);
+
+        //expected output
+        int expectedChargeDays = 2;
 
         //when
         int actualChargeDays = rentalAgreementService.calculateChargeDays(CHNS, checkoutDate, dueDate);
 
         //then
-        assertEquals(2, actualChargeDays);
+        assertEquals(expectedChargeDays, actualChargeDays);
     }
 
     //Extra Test 6
     @Test
-    public void calculateChargeDays_JAKDIndependenceDay_NoHolidayCharge() {
-        //given
+    public void calculateChargeDays_JAKD_IndependenceDay_NoHolidayCharge() {
+        //given input
         LocalDate checkoutDate = LocalDate.of(2020, 7, 2);
         LocalDate dueDate = LocalDate.of(2020, 7, 4);
+
+        //expected output
+        int expectedChargeDays = 1;
 
         //when
         int actualChargeDays = rentalAgreementService.calculateChargeDays(JAKD, checkoutDate, dueDate);
 
         //then
-        assertEquals(1, actualChargeDays);
+        assertEquals(expectedChargeDays, actualChargeDays);
     }
 
     //Extra Test 7
     @Test
-    public void calculateChargeDays_CHNSLaborDay_HolidayCharge() {
-        //given
+    public void calculateChargeDays_CHNS_LaborDay_HolidayCharge() {
+        //given input
         LocalDate checkoutDate = LocalDate.of(2023, 9, 4);
         LocalDate dueDate = LocalDate.of(2023, 9, 8);
+
+        //expected output
+        int expectedChargeDays = 4;
 
         //when
         int actualChargeDays = rentalAgreementService.calculateChargeDays(CHNS, checkoutDate, dueDate);
 
         //then
-        assertEquals(4, actualChargeDays);
+        assertEquals(expectedChargeDays, actualChargeDays);
     }
 
     //Extra Test 8
     @Test
-    public void calculateChargeDays_JAKDLaborDay_NoHolidayCharge() {
-        //given
+    public void calculateChargeDays_JAKD_LaborDay_NoHolidayCharge() {
+        //given input
         LocalDate checkoutDate = LocalDate.of(2023, 9, 4);
         LocalDate dueDate = LocalDate.of(2023, 9, 8);
+
+        //expected output
+        int expectedChargeDays = 3;
 
         //when
         int actualChargeDays = rentalAgreementService.calculateChargeDays(JAKD, checkoutDate, dueDate);
 
         //then
-        assertEquals(3, actualChargeDays);
+        assertEquals(expectedChargeDays, actualChargeDays);
     }
 }

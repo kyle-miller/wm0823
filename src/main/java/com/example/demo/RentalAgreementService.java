@@ -35,7 +35,7 @@ public class RentalAgreementService {
         //calculate charge days
         int chargeDays = calculateChargeDays(tool, checkoutDate, dueDate);
 
-        //can chargeDays be less than 1? (i.e if qualifying tool is rented on holiday or weekend only)
+        //TODO: can chargeDays be less than 1? (i.e if qualifying tool is rented on holiday or weekend only)
 //        if(chargeDays < 1) {
 //            throw new IllegalArgumentException("Unable to process request.");
 //        }
