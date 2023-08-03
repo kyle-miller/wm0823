@@ -29,32 +29,14 @@ public class RentalAgreementService {
             throw new IllegalArgumentException("Please enter a valid discount percentage. The discount percentage must be between 0% and 100%.");
         }
 
-        //calculate due date
         LocalDate dueDate = checkoutDate.plusDays(rentalDays);
 
-        //calculate charge days
         int chargeDays = calculateChargeDays(tool, checkoutDate, dueDate);
 
-        //TODO: can chargeDays be less than 1? (i.e if qualifying tool is rented on holiday or weekend only)
-//        if(chargeDays < 1) {
-//            throw new IllegalArgumentException("Unable to process request.");
-//        }
+        BigDecimal preDiscountCharge = tool.getDailyCharge().multiply(BigDecimal.valueOf(chargeDays));
+        BigDecimal discountAmount = preDiscountCharge.multiply(BigDecimal.valueOf(discountPercent)).divide(BigDecimal.valueOf(100), RoundingMode.HALF_UP));
+        BigDecimal finalCharge = preDiscountCharge.subtract(discountAmount);
 
-        //calculate pre-discount charge
-        BigDecimal dailyRentalCharge = BigDecimal.valueOf(tool.getDailyCharge());
-        BigDecimal preDiscountCharge = dailyRentalCharge.multiply(BigDecimal.valueOf(chargeDays))
-                .setScale(2, RoundingMode.HALF_UP);
-
-        //calculate discount amount
-        BigDecimal discountAmount = preDiscountCharge.multiply(BigDecimal.valueOf(discountPercent))
-                .divide(BigDecimal.valueOf(100), RoundingMode.HALF_UP)
-                .setScale(2, RoundingMode.HALF_UP);
-
-        //calculate final charge
-        BigDecimal finalCharge = preDiscountCharge.subtract(discountAmount)
-                .setScale(2, RoundingMode.HALF_UP);
-
-        //map fields
         rentalAgreement.setToolCode(tool.getToolCode());
         rentalAgreement.setToolType(tool.getToolType());
         rentalAgreement.setToolBrand(tool.getBrand());
@@ -74,50 +56,17 @@ public class RentalAgreementService {
     }
 
     protected static int calculateChargeDays(Tool tool, LocalDate checkoutDate, LocalDate dueDate) {
-        boolean isIndependenceDay = false;
-        boolean isLaborDay = false;
-
-        //build list of all rental days
-        List<LocalDate> allRentalDates = new ArrayList<>();
-        LocalDate currentDate = checkoutDate;
-
-        while(currentDate.isBefore(dueDate)) {
-            allRentalDates.add(currentDate);
-            currentDate = currentDate.plusDays(1);
-        }
-
-        // Determine if tool is charged for on specific days
         int chargeDays = 0;
-        for(int i = 0; i < allRentalDates.stream().count(); i++) {
 
-                //if day is Saturday or Sunday then it's a weekend
-                if(allRentalDates.get(i).getDayOfWeek() == DayOfWeek.SATURDAY || allRentalDates.get(i).getDayOfWeek() == DayOfWeek.SUNDAY) {
-                    if(tool.isWeekendCharge()) {
-                        chargeDays++;
-                    }
-                }
-
-                //if day is not Saturday and is not Sunday then it's a weekday
-                if(allRentalDates.get(i).getDayOfWeek() != DayOfWeek.SATURDAY && allRentalDates.get(i).getDayOfWeek() != DayOfWeek.SUNDAY) {
-                    if(tool.isWeekdayCharge()) {
-                        chargeDays++;
-                    }
-                }
-
-                //check and subtract Independence Day if applicable
-                isIndependenceDay = checkForIndependenceDay(allRentalDates.get(i));
-                if(isIndependenceDay && !tool.isHolidayCharge()) {
-                    chargeDays -= 1;
-                    isIndependenceDay = false;
-                }
-
-                //check and subtract Labor Day if applicable
-                isLaborDay = checkForLaborDay(allRentalDates.get(i));
-                if(isLaborDay && !tool.isHolidayCharge()) {
-                    chargeDays -= 1;
-                    isLaborDay = false;
-                }
-        }
+        LocalDate rentalDate = checkoutDate;
+        do {
+            boolean isHoliday = !tool.isHolidayCharge() && (isIndependenceDay(rentalDate) || isLaborDay(rentalDate))
+            boolean isWeekend = rentalDate.getDayOfWeek() == DayOfWeek.SATURDAY || rentalDate.getDayOfWeek() == DayOfWeek.SUNDAY;
+            
+            if (!isHoliday && (isWeekend ? tool.isWeekendCharge() : tool.isWeekdayCharge())) {
+                chargeDays++;
+            }
+        } while ((rentalDate = rentalDate.plusDays(1)).isBefore(dueDate))
 
         return chargeDays;
     }

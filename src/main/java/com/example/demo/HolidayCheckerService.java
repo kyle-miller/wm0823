@@ -7,38 +7,25 @@ import java.time.LocalDate;
 
 @Service
 public class HolidayCheckerService {
-    public static boolean checkForIndependenceDay(LocalDate date) {
-        int july = 7;
-        int independenceDay = 4;
+    public static boolean isIndependenceDay(LocalDate date) {
+        boolean isJuly = date.getMonthValue() == 7;
+        boolean is3rd = date.getDayOfMonth() == 3;
+        boolean is4th = date.getDayOfMonth() == 4;
+        boolean is5th = date.getDayOfMonth() == 5;
         DayOfWeek dayOfWeek = date.getDayOfWeek();
+        boolean isFriday = dayOfWeek == DayOfWeek.FRIDAY;
+        boolean isNotWeekend = dayOfWeek != DayOfWeek.SATURDAY && dayOfWeek != DayOfWeek.SUNDAY;
+        boolean isMonday = dayOfWeek == DayOfWeek.MONDAY;
 
-        //easy check (note: If July 4th on Saturday or Sunday, it is not the observed holiday)
-        if(date.getMonthValue() == july && date.getDayOfMonth() == independenceDay && dayOfWeek != DayOfWeek.SATURDAY && dayOfWeek != DayOfWeek.SUNDAY) {
-            return true;
-        }
-
-        //is holiday on weekend check
-        if (date.getMonthValue() == july && (date.getDayOfMonth() == 3 || date.getDayOfMonth() == 5)) {
-            if (date.getDayOfMonth() == 3 && dayOfWeek == DayOfWeek.FRIDAY) {
-                return true;
-            } else if (date.getDayOfMonth() == 5 && dayOfWeek == DayOfWeek.MONDAY) {
-                return true;
-            }
-        }
-
-        return false;
+        return isJuly && ((is3rd && isFriday) || (is4th && isNotWeekend) || (is5th && isMonday));
     }
 
-    public static boolean checkForLaborDay(LocalDate date) {
-        int september = 9;
+    public static boolean isLaborDay(LocalDate date) {
+        boolean isSeptember = date.getMonthValue() == 9;
+        const isMonday = date.getDayOfWeek() == DayOfWeek.MONDAY;
+        const isFirstMonday = isMonday && date.getDayOfMonth() <= 7;
 
-        if(date.getMonthValue() == september) {
-            if(date.getDayOfWeek() == DayOfWeek.MONDAY && date.getDayOfMonth() <= 7) {
-                return true;
-            }
-        }
-
-        return false;
+        return isSeptember && isFirstMonday;
     }
 
 }

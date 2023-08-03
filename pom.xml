@@ -28,7 +28,7 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!--		removes boilerplate Getter/Setters -->
+		<!-- adds boilerplate Getter/Setters -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
